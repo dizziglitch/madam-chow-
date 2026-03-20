@@ -1,0 +1,17 @@
+workflows:
+  android-workflow:
+    name: Android Build
+    max_build_duration: 60
+    environment:
+      flutter: stable
+    scripts:
+      - name: Build APK
+        script: |
+          flutter create --project-name madam_chow --org com.dizziglitch .
+          cp lib/main.dart /tmp/main.dart
+          cp pubspec.yaml /tmp/pubspec.yaml
+          flutter pub get
+          cp /tmp/main.dart lib/main.dart
+          flutter build apk --debug
+    artifacts:
+      - build/**/outputs/**/*.apk
