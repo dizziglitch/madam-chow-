@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Madam Chow — Menu Master</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--crimson:#8B1A1A;--gold:#C9A84C;--cream:#FAF6EF;--ink:#1A1209;--muted:#7A6E60;--border:#E8DDD0;--green:#2D6A4F;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;}
+
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.78);display:flex;align-items:center;justify-content:center;z-index:1000;}
+.popup-box{background:white;border-radius:20px;padding:36px 28px;width:92%;max-width:400px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:slideUp 0.4s ease;}
+.popup-box p{color:var(--muted);font-size:0.88rem;margin-bottom:20px;line-height:1.5;}
+.popup-input{width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:1rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:16px;transition:border-color 0.2s;}
+.popup-input:focus{border-color:var(--crimson);}
+.popup-btn{width:100%;padding:14px;background:var(--crimson);color:white;border:none;border-radius:10px;font-size:1rem;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;}
+
+/* PRONOUNCE POPUP */
+.pronounce-popup{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:2000;}
+.pronounce-box{background:white;border-radius:16px;padding:28px 24px;width:88%;max-width:360px;text-align:center;animation:slideUp 0.3s ease;}
+.pronounce-box h3{font-family:'Playfair Display',serif;color:var(--crimson);margin-bottom:8px;font-size:1.2rem;}
+.pronounce-phonetic{font-size:1.3rem;color:var(--ink);font-style:italic;margin:12px 0;padding:14px;background:var(--cream);border-radius:10px;letter-spacing:1px;}
+.pronounce-speak-btn{padding:10px 28px;background:var(--crimson);color:white;border:none;border-radius:8px;font-size:0.9rem;cursor:pointer;margin:6px 4px;font-family:'DM Sans',sans-serif;}
+.pronounce-close-btn{padding:10px 28px;background:var(--border);color:var(--ink);border:none;border-radius:8px;font-size:0.9rem;cursor:pointer;margin:6px 4px;font-family:'DM Sans',sans-serif;}
+
+.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:flex-end;justify-content:center;z-index:999;}
+.detail-box{background:white;border-radius:20px 20px 0 0;padding:24px 22px 44px;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;animation:slideUp 0.3s ease;position:relative;}
+.detail-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;}
+.detail-name{font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--crimson);margin-bottom:4px;}
+.detail-cat{font-size:0.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:12px;}
+.detail-price-big{font-size:1.5rem;font-weight:700;color:var(--crimson);margin-bottom:18px;}
+.detail-section{margin-bottom:14px;}
+.detail-section-title{font-size:0.68rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:6px;font-weight:600;}
+.allergen-chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.73rem;font-weight:500;background:#FFF3E0;color:#E65100;margin:2px;}
+.close-detail{position:absolute;top:18px;right:18px;background:var(--border);border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:0.9rem;}
+.pronounce-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border:1.5px solid var(--gold);border-radius:20px;background:white;color:var(--gold);font-size:0.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;margin-bottom:14px;transition:all 0.2s;}
+.pronounce-btn:hover{background:var(--gold);color:white;}
+
+header{background:var(--crimson);color:white;text-align:center;padding:22px 20px 18px;position:relative;overflow:hidden;}
+header::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(255,255,255,0.03) 8px,rgba(255,255,255,0.03) 16px);}
+.header-logo{position:relative;display:inline-block;margin-bottom:4px;}
+header p{font-size:0.75rem;opacity:0.7;position:relative;letter-spacing:2px;text-transform:uppercase;}
+.user-greeting{font-size:0.8rem;opacity:0.85;position:relative;font-style:italic;margin-top:2px;}
+
+.tabs{display:flex;background:white;border-bottom:2px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex-shrink:0;padding:12px 14px;font-size:0.74rem;font-weight:500;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;border-bottom:3px solid transparent;color:var(--muted);transition:all 0.2s;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap;}
+.tab.active{color:var(--crimson);border-bottom-color:var(--crimson);}
+.content{max-width:760px;margin:0 auto;padding:16px 14px 60px;}
+
+.section-title{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--crimson);margin:22px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.subsection-title{font-size:0.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin:12px 0 6px;font-weight:600;}
+.item-card{background:white;border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;cursor:pointer;transition:all 0.2s;}
+.item-card:hover{box-shadow:0 4px 16px rgba(139,26,26,0.1);border-color:var(--crimson);transform:translateY(-1px);}
+.item-name{font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:700;margin-bottom:2px;}
+.item-desc{font-size:0.78rem;color:var(--muted);line-height:1.4;}
+.item-price{font-weight:700;color:var(--crimson);font-size:0.85rem;white-space:nowrap;flex-shrink:0;}
+.badge{display:inline-block;font-size:0.62rem;padding:1px 6px;border-radius:20px;margin-right:3px;font-weight:500;}
+.badge-veg{background:#E8F5E9;color:#2D6A4F;}
+.badge-sig{background:#FFF3E0;color:#E65100;}
+.badge-spicy{background:#FFEAEA;color:#8B1A1A;}
+.tap-hint{font-size:0.65rem;color:var(--gold);margin-top:3px;}
+.kcal{font-size:0.68rem;color:var(--muted);margin-left:5px;}
+.gst-notice{background:#FFF8E8;border:1px solid var(--gold);border-radius:8px;padding:10px 14px;font-size:0.78rem;color:#7A5A00;margin-bottom:16px;display:flex;gap:8px;}
+.search-wrap{position:relative;margin-bottom:14px;}
+.search-input{width:100%;padding:12px 16px 12px 40px;border:1.5px solid var(--border);border-radius:10px;font-size:0.9rem;font-family:'DM Sans',sans-serif;background:white;color:var(--ink);outline:none;transition:border-color 0.2s;}
+.search-input:focus{border-color:var(--crimson);}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);}
+
+/* IMPOSSIBLE GUEST */
+.ig-card{background:white;border-radius:14px;padding:18px;box-shadow:0 4px 20px rgba(0,0,0,0.06);margin-bottom:12px;cursor:pointer;border:1.5px solid var(--border);transition:all 0.2s;}
+.ig-card:hover{border-color:var(--crimson);}
+.ig-demand{font-family:'Playfair Display',serif;font-size:0.98rem;color:var(--ink);margin-bottom:6px;}
+.ig-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.ig-tag{padding:2px 9px;border-radius:20px;font-size:0.7rem;font-weight:500;background:var(--cream);color:var(--muted);border:1px solid var(--border);}
+.ig-answer{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+.ig-answer.show{display:block;animation:fadeIn 0.3s ease;}
+.ig-dish{font-weight:700;color:var(--crimson);font-family:'Playfair Display',serif;font-size:1rem;}
+.ig-reason{font-size:0.83rem;color:var(--muted);line-height:1.5;margin-top:4px;}
+.ig-mod{background:#E8F5E9;border-radius:8px;padding:9px 11px;font-size:0.8rem;color:#1B4332;margin-top:8px;border-left:3px solid var(--green);}
+
+/* QUIZ */
+.cat-chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;margin-bottom:14px;flex-wrap:wrap;}
+.cat-chip{flex-shrink:0;padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);background:white;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;color:var(--muted);transition:all 0.2s;}
+.cat-chip.active{background:var(--crimson);color:white;border-color:var(--crimson);}
+.quiz-type-btns{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.quiz-type-btn{flex:1;min-width:130px;padding:14px 10px;border:1.5px solid var(--border);border-radius:12px;background:white;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;transition:all 0.2s;}
+.quiz-type-btn.active{border-color:var(--crimson);background:#FDF5F5;}
+.qt-emoji{font-size:1.4rem;display:block;margin-bottom:4px;}
+.qt-label{font-size:0.8rem;font-weight:600;color:var(--ink);}
+.qt-desc{font-size:0.68rem;color:var(--muted);margin-top:2px;}
+.start-btn,.next-btn{display:block;margin:16px auto;padding:13px 34px;background:var(--crimson);color:white;border:none;border-radius:10px;font-size:0.95rem;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;transition:background 0.2s;}
+.start-btn:hover,.next-btn:hover{background:#6B1313;}
+
+/* AI LOADING */
+.ai-loading{text-align:center;padding:40px 20px;}
+.ai-loading-spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--crimson);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;}
+.ai-loading p{color:var(--muted);font-size:0.88rem;line-height:1.6;}
+.ai-loading .ai-dots span{display:inline-block;animation:dot 1.4s infinite;font-size:1.2rem;}
+.ai-loading .ai-dots span:nth-child(2){animation-delay:0.2s;}
+.ai-loading .ai-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes dot{0%,80%,100%{opacity:0}40%{opacity:1}}
+
+.quiz-card{background:white;border-radius:14px;padding:22px 18px;box-shadow:0 4px 20px rgba(0,0,0,0.07);margin-bottom:14px;}
+.quiz-progress{display:flex;justify-content:space-between;font-size:0.78rem;color:var(--muted);margin-bottom:8px;}
+.progress-bar{height:5px;background:var(--border);border-radius:3px;margin-bottom:16px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--gold);border-radius:3px;transition:width 0.4s ease;}
+.quiz-hint{font-size:0.7rem;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;font-weight:600;}
+.quiz-question{font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:16px;line-height:1.5;color:var(--ink);}
+.quiz-scenario{background:#FDF5F5;border-radius:10px;padding:14px;margin-bottom:14px;border-left:3px solid var(--crimson);}
+.quiz-scenario p{font-size:0.84rem;color:var(--ink);line-height:1.6;font-style:italic;}
+.options{display:grid;gap:8px;}
+.option-btn{padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;text-align:left;font-size:0.87rem;font-family:'DM Sans',sans-serif;cursor:pointer;background:white;color:var(--ink);transition:all 0.15s;line-height:1.4;}
+.option-btn:hover:not(:disabled){border-color:var(--crimson);background:#FDF5F5;}
+.option-btn.correct{background:#E8F5E9;border-color:#2D6A4F;color:#1B4332;}
+.option-btn.wrong{background:#FFEAEA;border-color:#8B1A1A;color:#5c0f0f;}
+.option-btn:disabled{cursor:default;}
+.result-box{margin-top:12px;padding:12px 14px;border-radius:8px;font-size:0.84rem;line-height:1.5;animation:fadeIn 0.3s ease;}
+.result-box.correct{background:#E8F5E9;color:#1B4332;border-left:4px solid #2D6A4F;}
+.result-box.wrong{background:#FFEAEA;color:#5c0f0f;border-left:4px solid #8B1A1A;}
+.score-card{text-align:center;background:white;border-radius:14px;padding:36px 22px;box-shadow:0 4px 20px rgba(0,0,0,0.07);}
+.score-big{font-family:'Playfair Display',serif;font-size:3.5rem;color:var(--crimson);line-height:1;margin-bottom:4px;}
+.score-label{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px;}
+.score-msg{font-family:'Playfair Display',serif;font-style:italic;font-size:1rem;color:var(--ink);margin-bottom:6px;line-height:1.6;}
+.score-by{font-size:0.85rem;color:var(--gold);font-weight:600;margin-bottom:22px;}
+
+/* FLASHCARD */
+.flashcard-wrap{perspective:1000px;cursor:pointer;margin-bottom:18px;height:210px;}
+.flashcard-inner{position:relative;height:100%;transform-style:preserve-3d;transition:transform 0.5s ease;border-radius:16px;}
+.flashcard-wrap.flipped .flashcard-inner{transform:rotateY(180deg);}
+.fc-front,.fc-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,0.1);}
+.fc-front{background:var(--crimson);color:white;}
+.fc-back{background:white;color:var(--ink);transform:rotateY(180deg);border:1px solid var(--border);}
+.fc-label{font-size:0.66rem;text-transform:uppercase;letter-spacing:2px;opacity:0.65;margin-bottom:8px;}
+.fc-name{font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:6px;}
+.fc-sub{font-size:0.75rem;opacity:0.65;}
+.fc-desc{font-size:0.84rem;color:var(--muted);line-height:1.5;margin-bottom:8px;}
+.fc-price{font-size:1rem;font-weight:700;color:var(--crimson);}
+.fc-nav{display:flex;gap:10px;justify-content:center;align-items:center;}
+.nav-btn{padding:9px 20px;border:1.5px solid var(--border);border-radius:8px;background:white;font-family:'DM Sans',sans-serif;font-size:0.85rem;cursor:pointer;transition:all 0.2s;color:var(--ink);}
+.nav-btn:hover{border-color:var(--crimson);color:var(--crimson);}
+.fc-counter{font-size:0.8rem;color:var(--muted);}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeIn 0.3s ease;}
+.hidden{display:none;}
+</style>
+</head>
+<body>
+
+sauce","sesame","spring onion"],allergens:["Gluten","Soy","Sesame"],price:"₹1350",kcal:544,pronounce:"drag-on mown-ten"},
+  {name:"Wu gok",cat:"Dimsum",sub:"Baked & Fried",desc:"5 spiced chicken puff, shiitake, purple cabbage dust",ingredients:["chicken","5 spice","shiitake","purple cabbage","taro pastry"],allergens:["Gluten","Soy"],price:"₹1350",kcal:621,pronounce:"woo gok"},
+  {name:"Prosperity salad",cat:"Small Plates",sub:"Salads",desc:"Hass avocado, jujube, goji berry, toasted sesame dressing",ingredients:["hass avocado","jujube","goji berry","toasted sesame dressing"],allergens:["Sesame","Sulphite"],price:"₹1250",kcal:520,veg:true,sig:true,pronounce:"pros-per-it-ee sal-ad"},
+  {name:"Sichuan chicken salad",cat:"Small Plates",sub:"Salads",desc:"Wood ear fungus, chilli threads, toasted peanuts",ingredients:["chicken","wood ear fungus","chilli threads","toasted peanuts"],allergens:["Nuts","Gluten","Soy"],price:"₹1750",kcal:427,spicy:true,pronounce:"sich-wan chick-en sal-ad"},
+  {name:"Soft shell crab nest",cat:"Small Plates",sub:"Appetizers",desc:"Spiced egg floss, quail egg, black pepper sauce",ingredients:["soft shell crab","egg floss","quail egg","black pepper sauce"],allergens:["Shellfish","Egg","Gluten"],price:"₹2250",kcal:711,sig:true,pronounce:"soft shell crab nest"},
+  {name:"Trio of tiger prawns",cat:"Small Plates",sub:"Appetizers",desc:"Hot Sichuan, aromatic garlic pepper and creamy pumpkin sauce",ingredients:["tiger prawns","Sichuan chilli oil","garlic","creamy pumpkin sauce"],allergens:["Shellfish","Milk","Gluten"],price:"₹2250",kcal:527,sig:true,pronounce:"tree-oh of tie-ger prawns"},
+  {name:"Sichuan La Zi Ji chicken",cat:"Small Plates",sub:"Appetizers",desc:"Fragrant spice, Sichuan peppercorn, crisp fried chilli",ingredients:["chicken","dried chillies","Sichuan peppercorn","garlic"],allergens:["Gluten","Soy"],price:"₹1750",kcal:769,spicy:true,sig:true,pronounce:"sich-wan la-zuh-jee chick-en"},
+  {name:"Pong Pong prawns",cat:"Small Plates",sub:"Appetizers",desc:"Puffed up like a hot air balloon, plum garlic sauce",ingredients:["king prawns","plum sauce","garlic","light batter"],allergens:["Shellfish","Gluten","Egg"],price:"₹2250",kcal:442,pronounce:"pong pong prawns"},
+  {name:"Hunanese Mandarin lamb",cat:"Small Plates",sub:"Appetizers",desc:"Star anise and Chinese citrus sauce, orange peel dust",ingredients:["lamb","star anise","Chinese citrus sauce","dried orange peel"],allergens:["Gluten","Soy","Sulphite"],price:"₹2000",kcal:574,pronounce:"hew-nan-eese man-da-rin lam"},
+  {name:"Imperial Jade — Vegetables",cat:"Soup",sub:"Imperial Jade",desc:"Baby spinach, sweet corn",ingredients:["baby spinach","sweet corn","vegetable broth"],allergens:["Egg","Soy"],price:"₹950",kcal:128,veg:true,pronounce:"im-peer-ee-al jade"},
+  {name:"Yin Yang — Vegetables",cat:"Soup",sub:"Yin Yang",desc:"Fresh shiitake, silken tofu, chinkiang vinegar",ingredients:["fresh shiitake","silken tofu","chinkiang vinegar"],allergens:["Soy","Sulphite"],price:"₹950",kcal:160,veg:true,pronounce:"yin yang"},
+  {name:"Shangxi Fragrant — Chicken",cat:"Soup",sub:"Shangxi",desc:"Star anise broth, shredded chicken",ingredients:["star anise","shredded chicken","ginger","chicken broth"],allergens:["Gluten","Soy"],price:"₹1050",kcal:210,pronounce:"shang-shee fray-grant"},
+  {name:"Roast Peking Duck (Half)",cat:"Roast & BBQ",sub:"Duck",desc:"Mandarin pancakes, scallions, cucumber, plum sauce + broth + stir fried duck",ingredients:["whole duck","hoisin plum sauce","mandarin pancakes","scallion","cucumber"],allergens:["Gluten","Soy","Sulphite"],price:"₹4500",kcal:812,sig:true,pronounce:"roast pee-king duck"},
+  {name:"Char siu pork",cat:"Roast & BBQ",sub:"Meat",desc:"Classic Cantonese BBQ pork neck, pickled rainbow vegetables",ingredients:["pork neck","char siu marinade","honey","five spice"],allergens:["Gluten","Soy","Pork"],price:"₹2500",kcal:527,pronounce:"char shew pork"},
+  {name:"Sizzling barbeque lamb chops",cat:"Roast & BBQ",sub:"Meat",desc:"Sweet pepper sauce, pickled chillies",ingredients:["lamb chops","sweet pepper sauce","pickled chillies","cumin"],allergens:["Gluten","Sulphite"],price:"₹3750",kcal:617,sig:true,pronounce:"siz-ling bar-bee-kyoo lam chops"},
+  {name:"Xiang La Tofu",cat:"Main Course",sub:"Vegetarian",desc:"Chef's take on a Sichuanese classic",ingredients:["firm tofu","Sichuan chilli bean paste","garlic","Sichuan peppercorn"],allergens:["Soy","Gluten"],price:"₹1900",kcal:516,veg:true,spicy:true,sig:true,pronounce:"shiang-la toe-foo"},
+  {name:"Wok tossed Chinese eggplant",cat:"Main Course",sub:"Vegetarian",desc:"Oyster chilli sauce, Sichuan peppercorn",ingredients:["Chinese eggplant","oyster chilli sauce","Sichuan peppercorn"],allergens:["Gluten","Soy"],price:"₹1900",kcal:353,veg:true,spicy:true,pronounce:"wok tost chi-neese egg-plant"},
+  {name:"Broccoli, chestnuts and goji berries",cat:"Main Course",sub:"Vegetarian",desc:"White garlic sauce",ingredients:["broccoli","water chestnuts","goji berries","white garlic sauce"],allergens:["Gluten","Soy"],price:"₹1900",kcal:347,veg:true,pronounce:"brok-oh-lee chest-nuts and go-jee ber-eez"},
+  {name:"Drunken lobster",cat:"Main Course",sub:"Fish & Seafood",desc:"Narcissus rice wine, golden garlic broccoli",ingredients:["whole lobster","Narcissus rice wine","golden garlic","broccoli"],allergens:["Shellfish","Alcohol","Gluten"],price:"₹4500",kcal:493,sig:true,pronounce:"drunk-en lob-ster"},
+  {name:"Cantonese steamed Chilean seabass",cat:"Main Course",sub:"Fish & Seafood",desc:"Superior soy sauce, coriander, banana chilli, young ginger",ingredients:["Chilean seabass","superior soy sauce","coriander","banana chilli"],allergens:["Fish","Soy","Gluten"],price:"₹4250",kcal:382,sig:true,pronounce:"can-ton-eese steamed chil-ee-an sea-bass"},
+  {name:"Shandong style roast chicken",cat:"Main Course",sub:"Meat & Poultry",desc:"Crisp skin, black vinegar, maltose, fresh red chillies",ingredients:["whole chicken","black vinegar","maltose","five spice"],allergens:["Gluten","Soy"],price:"₹2250",kcal:581,sig:true,pronounce:"shan-dong style roast chick-en"},
+  {name:"Ding baozhen chicken",cat:"Main Course",sub:"Meat & Poultry",desc:"Cashews, dried chillies, Sichuan peppercorns",ingredients:["chicken","cashew nuts","dried chillies","Sichuan peppercorns"],allergens:["Nuts","Gluten","Soy"],price:"₹2250",kcal:525,spicy:true,pronounce:"ding bao-jen chick-en"},
+  {name:"Lamb shanks hot pot",cat:"Main Course",sub:"Meat & Poultry",desc:"Slow braised with shimeji mushrooms, golden mantou buns",ingredients:["lamb shank","shimeji mushrooms","spiced broth","mantou buns"],allergens:["Gluten","Soy"],price:"₹3250",kcal:578,sig:true,pronounce:"lam shanks hot pot"},
+  {name:"Twice cooked pork belly",cat:"Main Course",sub:"Meat & Poultry",desc:"Black bean sauce",ingredients:["pork belly","black bean paste","garlic","leek"],allergens:["Gluten","Soy","Pork"],price:"₹3050",kcal:540,pronounce:"twice cookt pork bel-ee"},
+  {name:"Yang Zhou fried rice",cat:"Accompaniments",sub:"Rice",desc:"Char siu pork, poached prawn",ingredients:["jasmine rice","char siu pork","poached prawn","egg"],allergens:["Gluten","Soy","Egg","Shellfish"],price:"₹2050",kcal:662,sig:true,pronounce:"yang-joe fried rice"},
+  {name:"Lanzhou udon noodles",cat:"Accompaniments",sub:"Noodles",desc:"Flat wheat noodles from the noodle capital of China",ingredients:["Lanzhou flat wheat noodles","Asian greens","soy broth"],allergens:["Gluten","Sesame","Soy"],price:"₹1600",kcal:695,veg:true,pronounce:"lan-joe oo-don noo-dles"},
+  {name:"Wat tan hor fun",cat:"Accompaniments",sub:"Noodles",desc:"Silken rice noodles in golden garlic sauce",ingredients:["silken rice noodles","golden garlic sauce","egg"],allergens:["Egg","Soy","Gluten"],price:"₹1600",kcal:512,veg:true,pronounce:"wat-tan hor-fun"},
+  {name:"Darsan",cat:"Desserts",sub:"Desserts",desc:"Honey noodles with Sichuan pepper ice cream",ingredients:["honey fried noodles","Sichuan peppercorn ice cream","sesame"],allergens:["Gluten","Milk","Egg","Sesame"],price:"₹1200",kcal:472,sig:true,pronounce:"dar-san"},
+  {name:"Empress' flare",cat:"Desserts",sub:"Desserts",desc:"Alphonso carnation milk, sago pearls, pomelo segments",ingredients:["Alphonso mango","carnation milk","sago pearls","pomelo"],allergens:["Milk"],price:"₹1200",kcal:352,sig:true,pronounce:"em-press flair"},
+  {name:"The good luck red candy",cat:"Desserts",sub:"Desserts",desc:"Milk chocolate mousse, yuzu center, peanut rice crunch",ingredients:["milk chocolate mousse","yuzu gel","peanut rice crunch"],allergens:["Milk","Nuts","Gluten","Egg"],price:"₹1200",kcal:606,sig:true,pronounce:"the good luck red can-dee"},
+  {name:"Chinese red date pudding",cat:"Desserts",sub:"Desserts",desc:"Caramelized ginger ice cream, roasted walnuts, toffee sauce",ingredients:["red date","ginger ice cream","roasted walnuts","toffee sauce"],allergens:["Milk","Egg","Nuts","Gluten"],price:"₹1200",kcal:496,pronounce:"chi-neese red date pud-ing"},
+  // COCKTAILS
+  {name:"Zenith",cat:"Cocktails",sub:"Signature",desc:"Vodka, cucumber, ginger, sesame",ingredients:["vodka","cucumber","ginger","sesame","lime"],allergens:["Sesame","Alcohol"],price:"₹1650",sig:true,pronounce:"zee-nith"},
+  {name:"Jade Hue",cat:"Cocktails",sub:"Signature",desc:"Vodka, green juice, honey",ingredients:["vodka","fresh green juice","honey","lime"],allergens:["Alcohol"],price:"₹1650",pronounce:"jade hyoo"},
+  {name:"Mandarin spice Old Fashioned",cat:"Cocktails",sub:"Signature",desc:"Bourbon, mandarin orange, five spice infusion",ingredients:["bourbon","mandarin orange","five spice infusion","orange bitters"],allergens:["Alcohol"],price:"₹1650",sig:true,pronounce:"man-da-rin spice old fash-ond"},
+  {name:"Claritea",cat:"Cocktails",sub:"Signature",desc:"Bourbon, clarified jasmine tea, five spice, jaggery",ingredients:["bourbon","clarified jasmine tea","five spice","jaggery"],allergens:["Alcohol"],price:"₹1650",pronounce:"kla-ri-tea"},
+  {name:"Pearl of Fire",cat:"Cocktails",sub:"Signature",desc:"Tequila, pineapple, jalapeño, Sichuan peppercorn",ingredients:["tequila","pineapple juice","jalapeño","Sichuan peppercorn"],allergens:["Alcohol"],price:"₹1650",spicy:true,pronounce:"perl of fire"},
+  {name:"Madam's Favourite",cat:"Cocktails",sub:"Signature",desc:"Gin, rose tea, cardamom, coconut, cherry",ingredients:["gin","rose tea","cardamom","coconut","cherry"],allergens:["Alcohol"],price:"₹1650",sig:true,pronounce:"mad-ams fav-rit"},
+  {name:"Emerald Bloom",cat:"Cocktails",sub:"Signature",desc:"Gin, lychee, basil, cucumber, five spice honey",ingredients:["gin","lychee","basil","cucumber","five spice honey"],allergens:["Alcohol"],price:"₹1650",pronounce:"em-rald bloom"},
+  {name:"Mandarin Garden",cat:"Cocktails",sub:"Non-Alcoholic",desc:"Mint, spiced citrus and ginger",ingredients:["mandarin juice","mint","spiced citrus","ginger"],allergens:["Sulphite"],price:"₹650",veg:true,pronounce:"man-da-rin gar-den"},
+  // WINE
+  {name:"Patrick Clerget Pouilly Fumé",cat:"Wine by Glass",sub:"White",desc:"Loire France — Citrus, green apple, gooseberry. Dry, high acidity",ingredients:["100% Sauvignon Blanc","Loire Valley France"],allergens:["Sulphite","Alcohol"],price:"₹2000",region:"Loire Valley, France",grape:"Sauvignon Blanc",vintage:"2016",style:"Dry · High Acidity",pronounce:"pa-treek klair-zhay poo-ee foo-may"},
+  {name:"Camas Sauvignon Blanc",cat:"Wine by Glass",sub:"White",desc:"Pays d'Oc France — Passion fruit, pineapple, citrus",ingredients:["100% Sauvignon Blanc","Pays d'Oc France"],allergens:["Sulphite","Alcohol"],price:"₹1000",region:"Pays d'Oc, France",grape:"Sauvignon Blanc",vintage:"2024",style:"Dry · Medium Acidity",pronounce:"ka-ma so-vee-nyon blon"},
+  {name:"Sula Zinfandel Rosé",cat:"Wine by Glass",sub:"Rosé",desc:"Nashik India — Strawberry, raspberry, watermelon. Off-dry",ingredients:["100% Zinfandel","Nashik India"],allergens:["Sulphite","Alcohol"],price:"₹1200",region:"Nashik, India",grape:"Zinfandel",vintage:"2024",style:"Off-Dry · Medium Acidity",pronounce:"sue-la zin-fan-del ro-zay"},
+  {name:"Viña Tarapacá Cabernet Sauvignon",cat:"Wine by Glass",sub:"Red",desc:"Maipo Chile — Blackcurrant, black cherry, plum. Full-bodied",ingredients:["100% Cabernet Sauvignon","Maipo Valley Chile"],allergens:["Sulphite","Alcohol"],price:"₹2000",region:"Maipo Valley, Chile",grape:"Cabernet Sauvignon",vintage:"2024",style:"Dry · Full Body",pronounce:"veen-ya ta-ra-pa-ka cab-er-nay so-vee-nyon"},
+  {name:"Brancott Estate Pinot Noir",cat:"Wine by Glass",sub:"Red",desc:"Marlborough NZ — Red cherry, raspberry, cranberry, spice",ingredients:["100% Pinot Noir","Marlborough New Zealand"],allergens:["Sulphite","Alcohol"],price:"₹1900",region:"Marlborough, New Zealand",grape:"Pinot Noir",vintage:"2021",style:"Dry · Medium Body",pronounce:"bran-cot es-tate pee-no nwar"},
+  {name:"Campo Viejo Tempranillo",cat:"Wine by Glass",sub:"Red",desc:"Rioja Spain — Red cherry, strawberry, plum, vanilla",ingredients:["100% Tempranillo","Rioja Spain"],allergens:["Sulphite","Alcohol"],price:"₹1500",region:"Rioja, Spain",grape:"Tempranillo",vintage:"2021",style:"Dry · Medium Body",pronounce:"cam-po vee-ay-ho tem-pra-nee-yo"},
+  // CHAMPAGNE
+  {name:"Moët & Chandon Brut",cat:"Champagne & Sparkling",sub:"Épernay",desc:"NV — Crisp, biscuity, elegant",ingredients:["Pinot Noir","Chardonnay","Pinot Meunier"],allergens:["Sulphite","Alcohol"],price:"₹23,500",region:"Épernay, Champagne, France",grape:"Pinot Noir, Chardonnay, Pinot Meunier",vintage:"NV",style:"Brut · High Acidity",pronounce:"moh-ett ay shan-don brew"},
+  {name:"Dom Pérignon Brut",cat:"Champagne & Sparkling",sub:"Reims",desc:"2013 Prestige cuvée — the ultimate",ingredients:["Pinot Noir","Chardonnay"],allergens:["Sulphite","Alcohol"],price:"₹54,500",sig:true,region:"Reims, Champagne, France",grape:"Pinot Noir, Chardonnay",vintage:"2013",style:"Brut Vintage · Prestigious",pronounce:"dom peh-reen-yon brew"},
+  {name:"Veuve Clicquot Brut",cat:"Champagne & Sparkling",sub:"Reims",desc:"NV — Yellow label icon",ingredients:["Pinot Noir dominant blend"],allergens:["Sulphite","Alcohol"],price:"₹20,000",region:"Reims, Champagne, France",grape:"Pinot Noir dominant",vintage:"NV",style:"Brut · Rich · Full-bodied",pronounce:"vuv klee-koh brew"},
+  {name:"Chandon Brut Cuvée",cat:"Champagne & Sparkling",sub:"India",desc:"NV — Nashik India sparkling wine",ingredients:["Indian varieties","Nashik India"],allergens:["Sulphite","Alcohol"],price:"₹9,000",region:"Nashik, India",vintage:"NV",style:"Brut · Crisp",pronounce:"shan-don brew coo-vay"},
+  // SCOTCH
+  {name:"The Macallan 18 YO",cat:"Scotch Whisky",sub:"Highland Single Malt",desc:"18 years — rich dried fruit, vanilla, spice",ingredients:["Single malt scotch","Highland Scotland","18 years"],allergens:["Alcohol","Gluten"],price:"₹8,500",region:"Speyside, Scotland",pronounce:"the mac-al-an eighteen year old"},
+  {name:"Glenmorangie Signet",cat:"Scotch Whisky",sub:"Highland Single Malt",desc:"Chocolate malt — coffee, chocolate, orange",ingredients:["Single malt scotch","Highland Scotland","Chocolate malt"],allergens:["Alcohol","Gluten"],price:"₹4,000",region:"Highland, Scotland",pronounce:"glen-mor-an-jee sig-net"},
+  {name:"The Glenlivet 25 YO",cat:"Scotch Whisky",sub:"Speyside Single Malt",desc:"Ultra-premium — honeyed, smooth",ingredients:["Single malt scotch","Speyside Scotland","25 years"],allergens:["Alcohol","Gluten"],price:"₹9,000",region:"Speyside, Scotland",pronounce:"the glen-liv-et twenty-five year old"},
+  {name:"Glenfiddich 21 YO",cat:"Scotch Whisky",sub:"Speyside Single Malt",desc:"Caribbean rum cask finish",ingredients:["Single malt scotch","Speyside Scotland","Rum cask finish"],allergens:["Alcohol","Gluten"],price:"₹4,450",region:"Speyside, Scotland",pronounce:"glen-fid-ick twenty-one year old"},
+  {name:"Lagavulin 16 YO",cat:"Scotch Whisky",sub:"Islay Single Malt",desc:"Peaty, smoky, medicinal",ingredients:["Single malt scotch","Islay Scotland","16 years","Heavy peat"],allergens:["Alcohol","Gluten"],price:"₹4,250",region:"Islay, Scotland",pronounce:"lag-a-voo-lin sixteen year old"},
+  {name:"Johnnie Walker Blue Label",cat:"Scotch Whisky",sub:"Blended",desc:"Ultra-premium blend",ingredients:["Blended scotch","Rare aged malt and grain"],allergens:["Alcohol","Gluten"],price:"₹3,250",region:"Scotland",pronounce:"johnny walker blue label"},
+  // COGNAC
+  {name:"Rémy Martin Louis XIII",cat:"Cognac & Others",sub:"Cognac",desc:"The pinnacle — 100-year-old blend in crystal decanter",ingredients:["Grande Champagne Cognac","100-year blend"],allergens:["Alcohol","Sulphite"],price:"₹32,500",sig:true,region:"Grande Champagne, Cognac, France",pronounce:"ray-mee mar-tan loo-ee treh-ze"},
+  {name:"Hennessy XO",cat:"Cognac & Others",sub:"Cognac",desc:"XO — rich, woody, dried fruit",ingredients:["Cognac France","100+ eaux-de-vie blend"],allergens:["Alcohol","Sulphite"],price:"₹3,950",region:"Cognac, France",pronounce:"hen-uh-see ex-oh"},
+  {name:"The Yamazaki 12 YO",cat:"Cognac & Others",sub:"Japanese Whisky",desc:"Japan's iconic single malt — peach, coconut, mizunara oak",ingredients:["Japanese single malt","Yamazaki distillery","12 years"],allergens:["Alcohol","Gluten"],price:"₹3,750",region:"Osaka, Japan",pronounce:"ya-ma-za-ki twelve year old"},
+  {name:"Hibiki",cat:"Cognac & Others",sub:"Japanese Whisky",desc:"Suntory's elegant blend — floral, honeyed, soft",ingredients:["Blended Japanese whisky","Suntory"],allergens:["Alcohol","Gluten"],price:"₹2,750",region:"Japan",pronounce:"hee-bee-kee"},
+  {name:"Teeling Single Malt",cat:"Cognac & Others",sub:"Irish Whiskey",desc:"Award-winning Irish single malt — wine cask finish",ingredients:["Irish single malt","Dublin","Wine cask finish"],allergens:["Alcohol","Gluten"],price:"₹1,650",region:"Dublin, Ireland",pronounce:"tee-ling single malt"},
+  {name:"Jägermeister",cat:"Cognac & Others",sub:"Digestif",desc:"56 herbs, fruits and spices",ingredients:["56 herbs and spices","Germany"],allergens:["Alcohol","Sulphite"],price:"₹1,450",region:"Germany",pronounce:"yay-ger-my-ster"},
+  {name:"Campari",cat:"Cognac & Others",sub:"Aperitif",desc:"Bitter Italian aperitivo — 60ml",ingredients:["Bitter orange peel","herbs and spices","Italy"],allergens:["Alcohol","Sulphite"],price:"₹1,000",region:"Milan, Italy",pronounce:"cam-pa-ree"},
+  // BEER
+  {name:"Kingfisher Premium",cat:"Beer & Spirits",sub:"Beer",desc:"India's favourite lager — crisp and refreshing",ingredients:["barley malt","hops","yeast"],allergens:["Alcohol","Gluten"],price:"₹700",pronounce:"king-fish-er pree-mee-um"},
+  {name:"Hoegaarden",cat:"Beer & Spirits",sub:"Beer",desc:"Belgian white ale — coriander and orange peel",ingredients:["wheat","barley","coriander","orange peel"],allergens:["Alcohol","Gluten"],price:"₹900",region:"Belgium",pronounce:"who-gar-den"},
+  {name:"Erdinger",cat:"Beer & Spirits",sub:"Beer",desc:"German wheat beer — Bavarian tradition",ingredients:["wheat malt","barley","hops"],allergens:["Alcohol","Gluten"],price:"₹950",region:"Bavaria, Germany",pronounce:"air-ding-er"},
+  // GIN & SPIRITS
+  {name:"Hendricks Flora Adora",cat:"Beer & Spirits",sub:"Gin",desc:"Floral Hendricks — hibiscus and honeysuckle",ingredients:["Scottish grain spirit","cucumber","rose","flora botanicals"],allergens:["Alcohol"],price:"₹1,450",region:"Scotland",pronounce:"hen-dricks flo-ra a-dora"},
+  {name:"Bombay Sapphire",cat:"Beer & Spirits",sub:"Gin",desc:"Classic London Dry — 10 botanicals",ingredients:["10 botanicals","juniper","coriander"],allergens:["Alcohol","Gluten"],price:"₹1,300",region:"England",pronounce:"bom-bay sap-fire"},
+  {name:"Beluga Gold",cat:"Beer & Spirits",sub:"Vodka",desc:"Ultra-premium Russian vodka",ingredients:["Russian grain spirit","Siberian artesian water"],allergens:["Alcohol","Gluten"],price:"₹2,950",region:"Siberia, Russia",pronounce:"bell-oo-ga gold"},
+  {name:"Don Julio 1942",cat:"Beer & Spirits",sub:"Tequila",desc:"Iconic aged añejo — caramel, vanilla, agave",ingredients:["100% Blue Agave","Jalisco Mexico","2.5 years aged"],allergens:["
+      u.pitch=1.0;
+      u.volume=1.0;
+      // Find a good voice
+      const voices=window.speechSynthesis.getVoices();
+      const eng=voices.find(v=>v.lang.startsWith('en')&&!v.name.includes('Google')||v.lang.startsWith('en'));
+      if(eng)u.voice=eng;
+      window.speechSynthesis.speak(u);
+    },100);
+  } else {
+    alert('Speech not supported on this browser. Read the phonetic guide above!');
+  }
+}
+// Pre-load voices on page load
+if(window.speechSynthesis){
+  window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();
+  setTimeout(()=>window.speechSynthesis.getVoices(),500);
+}
+
+// ===================== FLASHCARDS =====================
+function renderFCCats(){
+  document.getElementById('fc-cats').innerHTML=`<button class="cat-chip active" onclick="fcSelectCat(this,null)">All</button>`+allCats.map(c=>`<button class="cat-chip" onclick="fcSelectCat(this,'${c.replace(/'/g,"\\'")}')">${catEmoji(c)} ${c}</button>`).join('');
+  fcLoadDeck(null);
+}
+function fcSelectCat(btn,cat){document.querySelectorAll('#fc-cats .cat-chip').forEach(b=>b.classList.remove('active'));btn.classList.add('active');fcLoadDeck(cat);}
+function fcLoadDeck(cat){fcItems=shuffle(cat?ALL.filter(i=>i.cat===cat):[...ALL]);fcIndex=0;fcFlipped=false;document.getElementById('fc-wrap').classList.remove('flipped');showFC();}
+function showFC(){
+  const item=fcItems[fcIndex];if(!item)return;
+  document.getElementById('fc-name').textContent=item.name;
+  document.getElementById('fc-sub').textContent=`${catEmoji(item.cat)} ${item.cat} · ${item.sub}`;
+  document.getElementById('fc-desc').innerHTML=(item.ingredients||[]).slice(0,4).map(i=>`• ${i}`).join('<br>')||item.desc;
+  document.getElementById('fc-price').textContent=item.price;
+  document.getElementById('fc-counter').textContent=`${fcIndex+1} / ${fcItems.length}`;
+}
+function flipCard(){fcFlipped=!fcFlipped;document.getElementById('fc-wrap').classList.toggle('flipped',fcFlipped);}
+function nextCard(){fcIndex=(fcIndex+1)%fcItems.length;if(!fcIndex)fcItems=shuffle(fcItems);fcFlipped=false;document.getElementById('fc-wrap').classList.remove('flipped');showFC();}
+function prevCard(){fcIndex=(fcIndex-1+fcItems.length)%fcItems.length;fcFlipped=false;document.getElementById('fc-wrap').classList.remove('flipped');showFC();}
+
+// ===================== AI QUIZ ENGINE =====================
+// This generates completely dynamic questions from the menu data
+// Every quiz is different — no static question bank
+
+function generateClassicQ(item, pool) {
+  // 8 different question templates — picked randomly each time
+  const templates = shuffle([
+
+    // T1: Identify dish from ingredients combo
+    () => {
+      const ingrs = shuffle(item.ingredients||[]).slice(0,3);
+      if(ingrs.length<2) return null;
+      const wrongs = pick(pool.filter(i=>i.name!==item.name&&(i.ingredients||[]).length>0),3);
+      if(wrongs.length<3) return null;
+      return { q:`A guest describes a dish that contains <em>${ingrs.join(', ')}</em>. Which dish are they talking about?`, hint:`${catEmoji(item.cat)} ${item.cat}`, correct:item.name, opts:shuffle([item.name,...wrongs.map(i=>i.name)]) };
+    },
+
+    // T2: Which ingredient is in this dish
+    () => {
+      const realIngr = shuffle(item.ingredients||[])[0];
+      if(!realIngr) return null;
+      const allIngredients = pool.flatMap(i=>i.ingredients||[]);
+      const fakes = shuffle([...new Set(allIngredients)].filter(i=>!(item.ingredients||[]).includes(i))).slice(0,3);
+      if(fakes.length<3) return null;
+      return { q:`Which of these ingredients is actually used in <em>${item.name}</em>?`, hint:`Think about the dish profile`, correct:realIngr, opts:shuffle([realIngr,...fakes]) };
+    },
+
+    // T3: Which ingredient does NOT belong
+    () => {
+      if((item.ingredients||[]).length<2) return null;
+      const realIngr = shuffle(item.ingredients||[])[0];
+      const allIngredients = pool.flatMap(i=>i.ingredients||[]);
+      const impostor = shuffle([...new Set(allIngredients)].filter(i=>!(item.ingredients||[]).includes(i)))[0];
+      if(!impostor) return null;
+      const others = shuffle(item.ingredients||[]).slice(0,3);
+      return { q:`Which ingredient does <em>NOT</em> belong in <em>${item.name}</em>?`, hint:`One of these is the impostor!`, correct:impostor, opts:shuffle([impostor,...others.slice(0,3)]) };
+    },
+
+    // T4: Which category
+    () => {
+      const wrongCats = shuffle([...new Set(pool.filter(i=>i.cat!==item.cat).map(i=>i.cat))]).slice(0,3);
+      if(wrongCats.length<3) return null;
+      return { q:`In which section of the Madam Chow menu would you find <em>${item.name}</em>?`, hint:`Think about the type of dish`, correct:item.cat, opts:shuffle([item.cat,...wrongCats]) };
+    },
+
+    // T5: Match description
+    () => {
+      if(!item.desc) return null;
+      const wrongs = shuffle(pool.filter(i=>i.cat===item.cat&&i.name!==item.name&&i.desc)).slice(0,3);
+      if(wrongs.length<3) return null;
+      return { q:`Which dish is described as: <em>"${item.desc}"</em>?`, hint:item.cat, correct:item.name, opts:shuffle([item.name,...wrongs.map(i=>i.name)]) };
+    },
+
+    // T6: Allergen knowledge
+    () => {
+      if(!(item.allergens||[]).length) return null;
+      const realA = shuffle(item.allergens)[0];
+      const allA = ["Gluten","Milk","Egg","Shellfish","Fish","Nuts","Soy","Pork","Sesame","Alcohol","Sulphite"];
+      const fakeA = shuffle(allA.filter(a=>!item.allergens.includes(a))).slice(0,3);
+      return { q:`A guest has an allergy. Which allergen is present in <em>${item.name}</em>?`, hint:`Check your allergen knowledge`, correct:realA, opts:shuffle([realA,...fakeA]) };
+    },
+
+    // T7: Which dish has this allergen (reverse)
+    () => {
+      if(!(item.allergens||[]).length) return null;
+      const allergen = shuffle(item.allergens)[0];
+      const safeItems = pick(pool.filter(i=>i.name!==item.name&&!(i.allergens||[]).includes(allergen)&&(i.allergens||[]).length>0),3);
+      if(safeItems.length<3) return null;
+      return { q:`Which dish contains <em>${allergen}</em> as an allergen?`, hint:`Important for guests with allergies`, correct:item.name, opts:shuffle([item.name,...safeItems.map(i=>i.name)]) };
+    },
+
+    // T8: Sub-section knowledge
+    () => {
+      const sameCat = pool.filter(i=>i.cat===item.cat&&i.sub!==item.sub);
+      const wrongSubs = shuffle([...new Set(sameCat.map(i=>i.sub))]).slice(0,3);
+      if(wrongSubs.length<3) return null;
+      return { q:`Under which sub-section is <em>${item.name}</em> found within the ${item.cat} menu?`, hint:`It's in the ${item.cat} section`, correct:item.sub, opts:shuffle([item.sub,...wrongSubs]) };
+    },
+
+  ]);
+
+  for(const fn of templates){
+    try{ const q=fn(); if(q) return q; } catch(e){}
+  }
+  return null;
+}
+alcoholic","Sophisticated"],dish:na.name,reason:`${na.name} is genuinely sophisticated — ${na.desc}. Serve it in a beautiful glass and nobody will know it's non-alcoholic.`,mod:"Suggest the Copenhagen Sparkling Teas — served in champagne flutes they look incredible on the table and feel truly celebratory."});
+  }
+  // 5. Shellfish allergy
+  const shellFree=ALL.filter(i=>!(i.allergens||[]).includes('Shellfish')&&i.cat==='Main Course'&&!i.veg);
+  if(shellFree.length){
+    const s=shuffle(shellFree)[0];
+    scenarios.push({demand:"I'm allergic to shellfish but I want something impressive as my main course 🦐❌",tags:["Shellfish-free","Impressive main"],dish:s.name,reason:`${s.name} is completely shellfish-free and genuinely impressive. ${s.desc} — this is a dish that will make any guest happy.`,mod:"Remind the kitchen to use shellfish-free utensils. A serious allergy needs full transparency with the chef."});
+  }
+  // 6. Something sweet not sugary
+  const desserts=ALL.filter(i=>i.cat==='Desserts'&&i.kcal&&i.kcal<400);
+  if(desserts.length){
+    const d=shuffle(desserts)[0];
+    scenarios.push({demand:"I want something sweet but I don't want a sugar rush 🍬",tags:["Sweet","Not too sugary"],dish:d.name,reason:`${d.name} at ${d.kcal} kcal uses natural sweetness rather than heavy refined sugar. ${d.desc}`,mod:"The Empress' flare uses Alphonso mango and pomelo — natural fruit sugars only. Ask for no extra condensed milk for a lighter finish."});
+  }
+  // 7. Big appetite, value for money
+  const bigDishes=ALL.filter(i=>i.kcal&&i.kcal>700&&i.cat!=='Cocktails');
+  if(bigDishes.length){
+    const b=shuffle(bigDishes)[0];
+    scenarios.push({demand:"I'm absolutely starving and I want to feel full. What's the most substantial dish? 🍖",tags:["Hearty","High calorie","Filling"],dish:b.name,reason:`${b.name} at ${b.kcal} kcal is one of the most substantial options. ${b.desc} — a truly satisfying choice.`,mod:"Pair with Yang Zhou fried rice (662 kcal) for a genuinely filling combination. That's a proper meal!"});
+  }
+  // 8. Signature dish for first timer
+  const sigDishes=ALL.filter(i=>i.sig&&i.cat!=='Cocktails');
+  if(sigDishes.length){
+    const s=shuffle(sigDishes)[0];
+    const s2=shuffle(sigDishes.filter(i=>i.name!==s.name))[0];
+    scenarios.push({demand:"It's my first time here and I want to order what the restaurant is REALLY known for 🌟",tags:["First visit","Signature","Must-try"],dish:`${s.name} + ${s2?s2.name:'Prosperity salad'}`,reason:`${s.name} is a signature of Madam Chow — ${s.desc}. ${s2?`Pair it with ${s2.name} (${s2.desc}) for the full experience.`:''}`,mod:"Always guide first-timers to signature dishes. These represent the chef's vision and are what regulars keep coming back for."});
+  }
+  return shuffle(scenarios).slice(0,8);
+}
+
+function toggleIG(i){document.getElementById('ig-ans-'+i).classList.toggle('show');}
+
+// ===================== INIT =====================
+renderBrowse();
+</script>
+</body>
+</html>
