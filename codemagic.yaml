@@ -7,11 +7,11 @@ workflows:
     scripts:
       - name: Build APK
         script: |
-          flutter create --project-name madam_chow --org com.dizziglitch .
-          cp lib/main.dart /tmp/main.dart
-          cp pubspec.yaml /tmp/pubspec.yaml
+          flutter create --project-name madam_chow --org com.dizziglitch madamchow
+          cd madamchow
+          cp ../lib/main.dart lib/main.dart
+          cp ../pubspec.yaml pubspec.yaml
           flutter pub get
-          cp /tmp/main.dart lib/main.dart
           flutter build apk --debug
     artifacts:
-      - build/**/outputs/**/*.apk
+      - madamchow/build/**/outputs/**/*.apk
