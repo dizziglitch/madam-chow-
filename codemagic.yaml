@@ -9,8 +9,57 @@ workflows:
         script: |
           flutter create --project-name madam_chow --org com.dizziglitch madamchow
           cd madamchow
-          cp ../lib/main.dart lib/main.dart
-          cp ../pubspec.yaml pubspec.yaml
+          mkdir -p assets
+          cp ../index.html assets/index.html
+          flutter pub add webview_flutter
+          cat > lib/main.dart << 'EOF'
+          import 'package:flutter/material.dart';
+          import 'package:webview_flutter/webview_flutter.dart';
+          void main() => runApp(const App());
+          class App extends StatelessWidget {
+            const App({super.key});
+            @override
+            Widget build(BuildContext context) => MaterialApp(
+              debugShowCheckedModeBanner: false,
+              home: const Home(),
+            );
+          }
+          class Home extends StatefulWidget {
+            const Home({super.key});
+            @override
+            State<Home> createState() => _HomeState();
+          }
+          class _HomeState extends State<Home> {
+            late final WebViewController c;
+            @override
+            void initState() {
+              super.initState();
+              c = WebViewController()
+                ..setJavaScriptMode(JavaScriptMode.unrestricted)
+                ..loadFlutterAsset('assets/index.html');
+            }
+            @override
+            Widget build(BuildContext context) => Scaffold(
+              body: SafeArea(child: WebViewWidget(controller: c)),
+            );
+          }
+          EOF
+          cat > pubspec.yaml << 'EOF'
+          name: madam_chow
+          description: Madam Chow Menu Master
+          publish_to: none
+          version: 1.0.0+1
+          environment:
+            sdk: ">=3.0.0 <4.0.0"
+          dependencies:
+            flutter:
+              sdk: flutter
+            webview_flutter: ^4.4.2
+          flutter:
+            uses-material-design: true
+            assets:
+              - assets/index.html
+          EOF
           flutter pub get
           flutter build apk --debug
     artifacts:
